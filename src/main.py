@@ -9,6 +9,9 @@ class VacanciesHandler():
 
     vacancies = []
 
+    murmanskCOunter = 1280
+    maxMurmanskCounter = 1380
+
     partOfMurmansk = [
         # {
         #     "name": "Терский район",
@@ -135,9 +138,12 @@ class VacanciesHandler():
     #метод для нажатия кнопки, пока она не пропадёт   
     def pressingProcess(self) -> None:
         workCondition = True
-        while (workCondition):
+        counter = 0
+        while (workCondition) and (counter < self.maxMurmanskCounter):
+             
             button = self.driver.find_element(By.XPATH, self.buttonMoreXPath)
             vacancies = self.driver.find_elements(By.XPATH, self.cardVacanciXPath)
+            counter = len(vacancies)
             print(len(vacancies))
             if button.get_attribute("class") == self.buttonMoreActivClass:
                 self.pressButtonDowmloadMore()
@@ -196,26 +202,37 @@ class VacanciesHandler():
         for card in cardsVacanci:
             cardsUid.append(card.get_attribute('data-uid'))
 
+        counter = 0
         for uid in cardsUid:
-            card = self.driver.find_element(By.XPATH, f".//div[@data-uid='{uid}']")
-            print(card.text)
-            print("\n\n")
-            try:
-                ActionChains(self.driver).scroll_to_element(card).perform()
-            except:
-                print("не удалось навеститсь")
+            if counter > self.murmanskCOunter:
+                card = self.driver.find_element(By.XPATH, f".//div[@data-uid='{uid}']")
+                print(card.text)
+                print("\n\n")
+                try:
+                    ActionChains(self.driver).scroll_to_element(card).perform()
+                except:
+                    print("не удалось навеститсь")
 
-            time.sleep(2)
-            try:
-                card.click()
-            except:
-                print("не удалось нажать")
-            time.sleep(2)
+                time.sleep(2)
+                try:
+                    card.click()
+                except:
+                    print("не удалось нажать")
+                time.sleep(2)
 
-            try:
-                self.getInfoFromActiveVacanci(place=place)
-            except:
-                print("не удалось получить информацию")
+                try:
+                    self.getInfoFromActiveVacanci(place=place)
+                except:
+                    print("не удалось получить информацию")
+
+                counter = counter + 1
+                print(counter)
+            
+            else:
+                counter = counter + 1
+                print("\n\n")
+                print(counter)
+                print("слишком аленький индекс")
 
         # for card in cardsVacanci:
 

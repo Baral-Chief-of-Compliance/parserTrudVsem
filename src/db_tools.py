@@ -1,8 +1,16 @@
 import sqlite3
+import os
 
+
+DB_PATH : str = "volume/vacancies.db"
 
 def addVacancy(data: tuple) -> None:
-    connection = sqlite3.connect("vacancies.db")
+    if os.path.isfile(DB_PATH):
+        pass
+    else:
+        crateDb()
+
+    connection = sqlite3.connect(DB_PATH)
 
     cursor = connection.cursor()
 
@@ -25,7 +33,7 @@ def addVacancy(data: tuple) -> None:
 
 
 def crateDb() -> None:
-    connection = sqlite3.connect("vacancies.db")
+    connection = sqlite3.connect(DB_PATH)
 
     cursor = connection.cursor()
 

@@ -1,82 +1,87 @@
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver import ActionChains
+from selenium.webdriver.chrome.options import Options #добавляем для опций
 import time
 import db_tools
+import json
+import clean
+
+CONFIG_PATH = 'volume/config.json'
 
 
 class VacanciesHandler():
 
     vacancies = []
 
-    murmanskCOunter = 1280
-    maxMurmanskCounter = 1380
+    min_range = 1280
+    max_range = 1380
 
     partOfMurmansk = [
-        # {
-        #     "name": "Терский район",
-        #     "path": "https://trudvsem.ru/vacancy/search?_regionIds=5100000000000&_districts=5100600000000&page=0&salary=0&salary=999999"
-        # },
-        # {
-        #     "name" : "Кировск",
-        #     "path": "https://trudvsem.ru/vacancy/search?_regionIds=5100000000000&_districts=5100000500000&page=0&salary=0&salary=999999"
-        # },
-        # {
-        #     "name": "Мончегорск",
-        #     "path": "https://trudvsem.ru/vacancy/search?_regionIds=5100000000000&_districts=5100000600000&page=0&salary=0&salary=999999"
-        # },
-        # {
-        #     "name": "Кандалакшский район",
-        #     "path": "https://trudvsem.ru/vacancy/search?_regionIds=5100000000000&_districts=5100100000000&page=0&salary=0&salary=999999"
-        # },
-        # {
-        #     "name": "Североморск",
-        #     "path": "https://trudvsem.ru/vacancy/search?_regionIds=5100000000000&_districts=5100001100000&page=0&salary=0&salary=999999"
-        # },
-        # {
-        #     "name": "Кольский район",
-        #     "path": "https://trudvsem.ru/vacancy/search?_regionIds=5100000000000&_districts=5100300000000&page=0&salary=0&salary=999999"
-        # },
-        # {
-        #     "name": "Печенгский район",
-        #     "path": "https://trudvsem.ru/vacancy/search?_regionIds=5100000000000&_districts=5100500000000&page=0&salary=0&salary=999999"
-        # },
-        # {
-        #     "name": "Ковдорский район",
-        #     "path": "https://trudvsem.ru/vacancy/search?_regionIds=5100000000000&_districts=5100200000000&page=0&salary=0&salary=999999"
-        # },
-        # {
-        #     "name": "Гаджиево",
-        #     "path": "https://trudvsem.ru/vacancy/search?_regionIds=5100000000000&_districts=5100001200000&page=0&salary=0&salary=999999"
-        # },
-        # {
-        #     "name": "Полярный",
-        #     "path": "https://trudvsem.ru/vacancy/search?_regionIds=5100000000000&_districts=5100001000000&page=0&salary=0&salary=999999"
-        # },
-        # {
-        #     "name": "Снежногорск",
-        #     "path": "https://trudvsem.ru/vacancy/search?_regionIds=5100000000000&_districts=5100001300000&page=0&salary=0&salary=999999"
-        # },
+        {
+            "name": "Терский район",
+            "path": "https://trudvsem.ru/vacancy/search?_regionIds=5100000000000&_districts=5100600000000&page=0&salary=0&salary=999999"
+        },
+        {
+            "name" : "Кировск",
+            "path": "https://trudvsem.ru/vacancy/search?_regionIds=5100000000000&_districts=5100000500000&page=0&salary=0&salary=999999"
+        },
+        {
+            "name": "Мончегорск",
+            "path": "https://trudvsem.ru/vacancy/search?_regionIds=5100000000000&_districts=5100000600000&page=0&salary=0&salary=999999"
+        },
+        {
+            "name": "Кандалакшский район",
+            "path": "https://trudvsem.ru/vacancy/search?_regionIds=5100000000000&_districts=5100100000000&page=0&salary=0&salary=999999"
+        },
+        {
+            "name": "Североморск",
+            "path": "https://trudvsem.ru/vacancy/search?_regionIds=5100000000000&_districts=5100001100000&page=0&salary=0&salary=999999"
+        },
+        {
+            "name": "Кольский район",
+            "path": "https://trudvsem.ru/vacancy/search?_regionIds=5100000000000&_districts=5100300000000&page=0&salary=0&salary=999999"
+        },
+        {
+            "name": "Печенгский район",
+            "path": "https://trudvsem.ru/vacancy/search?_regionIds=5100000000000&_districts=5100500000000&page=0&salary=0&salary=999999"
+        },
+        {
+            "name": "Ковдорский район",
+            "path": "https://trudvsem.ru/vacancy/search?_regionIds=5100000000000&_districts=5100200000000&page=0&salary=0&salary=999999"
+        },
+        {
+            "name": "Гаджиево",
+            "path": "https://trudvsem.ru/vacancy/search?_regionIds=5100000000000&_districts=5100001200000&page=0&salary=0&salary=999999"
+        },
+        {
+            "name": "Полярный",
+            "path": "https://trudvsem.ru/vacancy/search?_regionIds=5100000000000&_districts=5100001000000&page=0&salary=0&salary=999999"
+        },
+        {
+            "name": "Снежногорск",
+            "path": "https://trudvsem.ru/vacancy/search?_regionIds=5100000000000&_districts=5100001300000&page=0&salary=0&salary=999999"
+        },
         {
             "name": "Мурманск",
             "path": "https://trudvsem.ru/vacancy/search?_regionIds=5100000000000&_districts=5100000100000&page=0&salary=0&salary=999999"
         },
-        # {
-        #     "name": "Апатиты",
-        #     "path": "https://trudvsem.ru/vacancy/search?_regionIds=5100000000000&_districts=5100000200000&page=0&salary=0&salary=999999"
-        # },
-        # {
-        #     "name": "Оленегорск",
-        #     "path": "https://trudvsem.ru/vacancy/search?_regionIds=5100000000000&page=0&districts=5100000700000&districts=5100001500000&districts=5100001600000&salary=0&salary=999999"
-        # },
-        # {
-        #     "name": "Ловозерский район",
-        #     "path": "https://trudvsem.ru/vacancy/search?_regionIds=5100000000000&_districts=5100400000000&page=0&salary=0&salary=999999"
-        # },
-        # {
-        #     "name": "Полярные Зори",
-        #     "path": "https://trudvsem.ru/vacancy/search?_regionIds=5100000000000&_districts=5100000900000&page=0&salary=0&salary=999999"
-        # }
+        {
+            "name": "Апатиты",
+            "path": "https://trudvsem.ru/vacancy/search?_regionIds=5100000000000&_districts=5100000200000&page=0&salary=0&salary=999999"
+        },
+        {
+            "name": "Оленегорск",
+            "path": "https://trudvsem.ru/vacancy/search?_regionIds=5100000000000&page=0&districts=5100000700000&districts=5100001500000&districts=5100001600000&salary=0&salary=999999"
+        },
+        {
+            "name": "Ловозерский район",
+            "path": "https://trudvsem.ru/vacancy/search?_regionIds=5100000000000&_districts=5100400000000&page=0&salary=0&salary=999999"
+        },
+        {
+            "name": "Полярные Зори",
+            "path": "https://trudvsem.ru/vacancy/search?_regionIds=5100000000000&_districts=5100000900000&page=0&salary=0&salary=999999"
+        }
     ]
 
     #path = "https://trudvsem.ru/vacancy/search?_regionIds=5100000000000&page=0&salary=0&salary=999999"
@@ -84,7 +89,7 @@ class VacanciesHandler():
     #тестовый url для Терского райна
     pathTest = "https://trudvsem.ru/vacancy/search?_regionIds=5100000000000&_districts=5100600000000&page=0&salary=0&salary=999999"
 
-    driver = webdriver.Chrome()
+    driver : webdriver
 
     #счетчик всех вакансий на сайте по региону и его XPath
     counterVacancies = 0
@@ -134,24 +139,96 @@ class VacanciesHandler():
             print("не получилось нажать")
         time.sleep(2)
 
+
+    #по сути config.js это своего рода состояние парсера, пока он не закончил сбор данных
+    #чтобы каждый раз запуская selenium мы могли обращаться к моменту где остановился наш сбор
+    #или на каком моменте лучше прервать сессию бота и запустить по новой, чтобы не грузить бразуре
+    #по 1гб на вкладку, что соответсвено сказывается на работе парсера и браузера 
+    #функция для прочтения конфига для парсера в формате json
+    def readJsonConfig(self) -> dict:
+        f = open(CONFIG_PATH)
+        data = json.load(f)
+        f.close()
+        return data
+
+    
+    #функция для записи конфига в формате json
+    def setJsonConfig(self, config: dict) -> None:
+        f = open(CONFIG_PATH, 'w')
+        json.dump(config, f)
+        f.close()
+    
+    #установка занчения в json файл сколько карточек с вакансиями по региону
+    def setCardsCount(self, cards_count: int) -> None:
+        config = self.readJsonConfig()
+        config['cards_count'] = cards_count
+        self.setJsonConfig(config)
+
+
+    #установка базового значения конфига для парсинга
+    def setBaseSettingConfig(self) -> None:
+        self.setJsonConfig(
+            {
+                "region": "Терский район",
+                "region_index": 0,
+                "min_range": 0,
+                "max_range": 100,
+                "delta_range": 100,
+                "cards_count": 0,
+                "work_status": True
+            }
+        )
     
     #метод для нажатия кнопки, пока она не пропадёт   
     def pressingProcess(self) -> None:
         workCondition = True
         counter = 0
-        while (workCondition) and (counter < self.maxMurmanskCounter):
+
+        #берем конфиг, тобишь возвращаемся к стейту приложения
+        config = self.readJsonConfig()
+
+        self.min_range = config['min_range']
+        self.max_range = config['max_range']
+        delta = config['delta_range']
+
+
+        while (workCondition) and (counter <= self.max_range):
              
             button = self.driver.find_element(By.XPATH, self.buttonMoreXPath)
             vacancies = self.driver.find_elements(By.XPATH, self.cardVacanciXPath)
-            counter = len(vacancies)
-            print(len(vacancies))
-            if button.get_attribute("class") == self.buttonMoreActivClass:
-                self.pressButtonDowmloadMore()
-                nowVacancies = self.driver.find_elements(By.XPATH, self.cardVacanciXPath)
-                if vacancies == nowVacancies:
-                    workCondition = False
-            elif button.get_attribute("class") == self.buttonMoreDeactiveClass:
+
+            if len(vacancies) > self.max_range:
+                #это именно тот момент где мы двигаем каретку в конфиге
+                #увеличивая min и max значения на delta
+                config["max_range"] = self.max_range + delta
+                config["min_range"] = self.min_range + delta
+                self.setJsonConfig(config=config)
                 workCondition = False
+
+            else:
+                counter = len(vacancies)
+                print(f"len(vacancies): {len(vacancies)}")
+                if button.get_attribute("class") == self.buttonMoreActivClass:
+                    self.pressButtonDowmloadMore()
+                    nowVacancies = self.driver.find_elements(By.XPATH, self.cardVacanciXPath)
+                    print(f"nowVacancies: {len(nowVacancies)}")
+                    print(f"vacancies: {len(vacancies)}")
+                    if vacancies == nowVacancies:
+                        #здесть имеется виду количество вкансий равно количество вакансий
+                        config["work_status"] = False
+                        self.setJsonConfig(config=config)
+                        workCondition = False
+                elif button.get_attribute("class") == self.buttonMoreDeactiveClass:
+                    #если кнопки нет, то и начаша работа здесь окончена
+                    config["work_status"] = False
+                    self.setJsonConfig(config=config)
+                    workCondition = False
+
+        print(f"закончил нажимать на кнопку вот, столько вакансий {counter}")
+
+        #установка в конфиг количества карт с вакансиями в регионе
+        self.setCardsCount(counter)
+
 
 
     #метод для сбора информации с активной вакансии
@@ -204,7 +281,7 @@ class VacanciesHandler():
 
         counter = 0
         for uid in cardsUid:
-            if counter > self.murmanskCOunter:
+            if counter > self.min_range:
                 card = self.driver.find_element(By.XPATH, f".//div[@data-uid='{uid}']")
                 print(card.text)
                 print("\n\n")
@@ -232,7 +309,10 @@ class VacanciesHandler():
                 counter = counter + 1
                 print("\n\n")
                 print(counter)
-                print("слишком аленький индекс")
+                print("слишком маленкий индекс")
+
+            if counter >= self.max_range:
+                break
 
         # for card in cardsVacanci:
 
@@ -271,33 +351,112 @@ class VacanciesHandler():
 
 
     #метод для получения всех вакансий с сайта trudvsem.ru
-    def getAllVacancies(self, path : str, place : str) -> None:
-        self.driver.get(path)
-        self.driver.set_window_size(1920, 1080)
-        time.sleep(5)
+    def getAllVacancies(self, path : str, place : str) -> None: 
 
-        #self.counterVacancies = self.getCounterVacancies()
+        work_status : bool = True
 
-        time.sleep(2)
+        #цикл работы парсера
+        while work_status:
+            config = self.readJsonConfig()
+            work_status = config['work_status']
 
-        self.pressingProcess()
+            #точка выхода из цикла
+            if not(work_status):
+                print("вырубаю драйвер")
+                self.driver.quit()
+                break
+            
+            #опции
+            options = Options()
+            options.add_argument('--no-sandbox')
+            options.add_argument('--disable-gpu')
+            options.add_argument('--disable-dev-shm-usage')
+            options.add_argument('--headless=new')
+            options.add_argument('--start-maximized')
+            options.add_argument('--window-size=1920,1080')
+            options.add_argument('--ignore-certificate-errors')
 
-        time.sleep(5)
+            self.driver = webdriver.Chrome(options=options)
+            self.driver.get(path)
+            #self.driver.set_window_size(1920, 1080)
+            time.sleep(5)
 
-        self.getInfoFromVacanciCards(place=place)
+            #self.counterVacancies = self.getCounterVacancies()
 
-        time.sleep(5)
+            time.sleep(2)
 
 
-        self.driver.quit
+            #в данной части кода мы нажимаем кнопку "Загрузить еще"
+            #чтобы получить на странице все карточки с вакансиями.
+            #по которым мы сможем передвигаться и собирать информацию
+            self.pressingProcess()
+
+            time.sleep(5)
+
+            #а в этой части коды мы собираем информацию с карточек
+            #которые есть на сайте, по средством нажатия на эти карточки
+            #и собирания с них полной информации
+            self.getInfoFromVacanciCards(place=place)
+
+            time.sleep(5)
+
+            self.driver.quit()
+
+            time.sleep(10)
+        
+        #по окончании процесса сбора вакансий с региона, мы сбрасываем
+        config = self.readJsonConfig()
+        config["cards_count"] = 0
+        config["region_index"] = config["region_index"] + 1
+        self.setJsonConfig(config=config)
 
     def getAllVacanciesFromMurmanRegion(self):
-        for partOfRegion in self.partOfMurmansk:
+        #устанавливаем стратовый конфиг для парсера
+        #self.setBaseSettingConfig()
+
+
+        #приступаем к сбору вакансий 
+        for index, partOfRegion in enumerate(self.partOfMurmansk):
+
+
+            print(f"count: {index}; partOfRegion: {partOfRegion}")
+
+            #на каждой итерации нашего списка регионов
+            #мы должны грубо говоря сбрасывать config
+            config = self.readJsonConfig()
+
+            if config["region_index"] != index:
+                continue
+            
+            else:
+                if config["cards_count"] != 0:
+                    print("не равно нулю")
+                    pass
+                else:
+                    config["region"] = partOfRegion["name"]
+                    config["region_index"] = index
+                    config["work_status"] = True
+                    config["min_range"] = 0
+                    config["max_range"] = 100
+                    config["delta_range"] = 100
+                    config["cards_count"] = 0
+
+            print("запуск ппроцесса получения всех вакансий")
+            self.setJsonConfig(config=config)
+
             self.getAllVacancies(
                 path=partOfRegion["path"],
                 place=partOfRegion["name"]
             )
 
-vh = VacanciesHandler()
+#запуск скрипта
+if __name__ == "__main__":
 
-vh.getAllVacanciesFromMurmanRegion()
+    vh = VacanciesHandler()
+
+    vh.getAllVacanciesFromMurmanRegion()
+    vh.setBaseSettingConfig()
+
+    # чистим полученные вакансии от говна
+    clean.clean_db()
+    clean.del_db("dbs/vacancies.db")
